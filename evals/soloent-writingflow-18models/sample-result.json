@@ -1,0 +1,22 @@
+{
+  "eval_id": "soloent-writingflow-18models",
+  "submission": {"kind": "run", "runner_version": "soloent-writingflow-18models/pack-to-result@1.0.0", "run_date": "2026-08-12"},
+  "results": [{
+    "participant": {"model": "example/model-under-evaluation", "harness": "SoloEnt", "harness_version": "0.0.0-structural-example"},
+    "score": null,
+    "detail": "结构示例：三次尝试中两次形成有效首章，等待评测作者匿名盲评后补分；示例不代表真实运行或官方成绩。",
+    "supplementary_views": [{
+      "type": "metric_table",
+      "id": "workflow-attempts",
+      "label": "运行证据",
+      "title": "三次独立写作工作流尝试",
+      "columns": ["运行", "状态", "正文文件", "字节数", "正文 SHA-256", "过程证据 SHA-256", "失败说明"],
+      "rows": [
+        {"cells": ["run-1", "有效首章", "chapter-1.txt", 12001, "1111111111111111111111111111111111111111111111111111111111111111", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", null]},
+        {"cells": ["run-2", "有效首章", "chapter-2.txt", 11872, "2222222222222222222222222222222222222222222222222222222222222222", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", null]},
+        {"cells": ["run-3", "失败", null, null, null, "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "示例：本轮未生成完整第一章。"]}
+      ],
+      "note": "结构示例中的文件、哈希、状态和说明只展示字段格式，不是可核验的运行证据。"
+    }]
+  }]
+}

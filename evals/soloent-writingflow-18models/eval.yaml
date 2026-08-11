@@ -1,0 +1,174 @@
+id: soloent-writingflow-18models
+protocol_revision: 1
+name: SoloEnt 网文写作全流程 18 模型横评
+category: useful
+description: >-
+  这套评测让参评模型在 SoloEnt 的独立空项目中，从一条“穿越闰土、修炼国术、打击洋人”的想法开始，
+  依次完成 Plan 需求沟通、策划文件、章纲和第一章正文。每个模型运行 3 次，首章生成后立即停止；
+  真人编辑隐藏模型身份后按百分制评阅有效首章，模型的有效首章均分是主成绩。来源报告覆盖 18 个模型、54 次运行与 53 篇有效首章。
+hook_title: 同一条小说想法跑完整流程，模型能把计划兑现成好看的第一章吗
+upstream:
+  repo: SoloEnt-AI/novel_benchmark
+  commit: 46c5573259dd1802c808a4063899e99bd8e1f54c
+  contributors: [Sandrasslc]
+references:
+  homepage: https://soloent.ai/zh/articles/guo-chan-mo-xing-xing-jia-bi-si-xiong-di-plan-mo-shi-zhi-chu-ce-ping
+  repository: https://github.com/SoloEnt-AI/novel_benchmark
+dimensions: [语言, 推理]
+interface: agent
+runner: custom
+custom_mode: external_workflow
+scoring: custom
+scored_by: author
+score_policy: author_fill
+baseline_policy: required
+score_unit: 分
+scoring_note: >-
+  同一参评模型必须在三个相互独立的 SoloEnt 空项目中执行完整流程。每次先在 Plan 阶段提交 tasks[].prompt 的逐字题面，
+  再提交固定补充条件“100 万字，传统国术，主角魂穿，热血爽文，清末民初”；后续问题一律采用模型推荐默认值，
+  切换 Act 后在完整第一章落盘时立即停止。有效首章是存在且内容完整的第一章；首章未生成的运行记为失败，不进入分母，
+  但三次尝试必须全部记录。真人编辑只看匿名首章，按百分制独立打分；主成绩为有效首章分数的算术平均，越高越好。
+  引导互动、结构设计和执行遵从的 5 分制证据评分只作解释，不能与真人分数换算或合并。仓库转换器只核验三次尝试、
+  有效正文文件和指纹并输出空分；最终数值由评测作者核对停止条件、匿名盲评表与失败证据后补入。
+command_template:
+  argv: [node, evals/soloent-writingflow-18models/pack-to-result.mjs, "{input}", --out, "{output}"]
+  output: soloent-writingflow-18models-result.json
+trials: 3
+detail_profile:
+  source_kind: upstream_publication
+  overview_note: >-
+    协议、方法、题面和官方成绩来自 SoloEnt-AI/novel_benchmark commit 46c55732 中 2026-07-07 发布的
+    writingflow_18models 报告；HTML 报告快照 sha256 为 e65c5a673a860355565e9800e8c2c5049667b88bcc0551884c9fc74bdbabb426。
+  summary:
+    plain_language: >-
+      参评模型拿到的是一句还很粗的网文想法。它先在 Plan 阶段追问并规划，再根据固定补充条件自己做项目设定、人物、
+      大纲和章纲，最后切换到 Act 写出第一章。每个模型从空项目独立跑三次，首章落盘就停。真人编辑看不到模型名，
+      只按百分制评价最终首章；报告还单独观察 Plan 引导、结构设计和正文是否遵守自建章纲。
+    why_it_matters: >-
+      写作模型不仅要会写一段文字，还要把模糊创意逐步变成可执行方案，并让正文兑现自己刚建立的设定与章纲。
+      只测同一大纲下的文笔会漏掉需求澄清、结构工程和长链路执行；只看过程文件数量又无法说明成品是否好读。
+      这套评测把过程和最终首章分开观察，揭示“会规划”与“会写正文”并不是同一种能力。
+  method_steps:
+    - title: 从独立空项目开始
+      description: 每次运行新建空项目，不继承其他运行的对话、策划文件、正文、评分或人工修改。
+    - title: Plan 阶段提交统一输入
+      description: >-
+        先逐字提交“我想写一本网文，主角穿越闰土，开始修炼国术，打击洋人。你帮我规划一下小说写作流程”，
+        再提交固定补充条件“100 万字，传统国术，主角魂穿，热血爽文，清末民初”；其余问题采用模型推荐默认值。
+    - title: 切换 Act 并在首章落盘时停止
+      description: >-
+        模型自行生成策划、设定、大纲和章纲，随后写正文。完整第一章生成即停止；停止条件之后额外生成的章节不增加有效样本数。
+    - title: 匿名评阅有效首章
+      description: >-
+        真人编辑在看不到模型身份的情况下按百分制评价第一章，关注文笔、细节、剧情、冲突、爽点、节奏、升华与网文感；
+        每个模型取有效首章的算术平均作为主成绩。
+    - title: 分开分析三项过程能力
+      description: >-
+        引导互动看 Plan 问题是否有效，结构设计看策划文件的完整性、连贯性和稳定性，执行遵从看正文是否按自己的章纲推进。
+        三项均为 5 分制证据评分，不与真人百分制混合。
+  score_interpretation: >-
+    主成绩是有效第一章的真人编辑盲评分均值，范围 0–100，越高越好；三次都有效时是三分平均，来源报告中 MiniMax M3
+    有一轮失败，因此 37.5 是两篇有效首章的平均。它衡量的是整个 Plan→Act 工作流最后交出的首章阅读质量，
+    不是纯文笔，也不是过程文件质量。来源最高 75.0、最低 37.5，分五批评阅，个位数差距不能当作可靠胜负。
+  key_facts:
+    - value: 18 个模型 / 54 次运行
+      label: 来源报告规模
+      description: 每个模型三个独立空项目，同题执行完整写作流程。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/meta.json
+    - value: 53 篇
+      label: 有效第一章
+      description: MiniMax M3 有一轮失败，其余运行均形成有效首章。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/page.template.html
+    - value: 75.0 / 100
+      label: 来源榜单最高真人盲评均分
+      description: GPT-5.4 的三轮分数为 73、77、75。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/page.template.html
+    - value: 23 / 53
+      label: 达到 60 分的有效首章
+      description: 来源报告同时指出没有任何一篇达到 80 分。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/page.template.html
+    - value: 470 个文件
+      label: 固定 commit 中保存的运行材料文件
+      description: 含策划总纲、设定、分卷与章节细纲以及被盲评的第一章，按模型原目录结构保留。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/tree/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/materials
+  caveats:
+    - title: 只测一个题材且每个模型三次
+      description: >-
+        所有运行都是清末民初的传统国术热血爽文。换成都市、玄幻、悬疑或更长篇幅后，模型的相对表现可能改变；三次运行也不足以精确估计方差。
+    - title: 评的是完整工作流，不是同纲文笔赛
+      description: >-
+        每个模型根据自己在 Plan 阶段形成的大纲写正文，因此最终首章同时受需求引导、结构设计与正文生成影响，不能把分数解释为只比较文笔。
+    - title: 五批盲评只能看大致档位
+      description: >-
+        18 个模型分五批评阅，时间不同，编辑也可能不同；来源报告明确提醒个位数差距不能视为可靠胜负。过程机器评分不是盲评，最后两个批次还略有调整。
+    - title: 部分过程证据不完整
+      description: >-
+        补充批次没有保存完整 Plan 对话，因此四个模型不评价引导互动；另有六个模型并非三次都有可评分章纲。缺失项保持为空，不用其他维度补齐。
+    - title: 成本不等于官方牌价
+      description: >-
+        成本来自 SoloEnt 后台实付，跨批次折扣与人民币换算口径不同，且没有拆分输入、输出和缓存 token；只能用于本次工作流预算参考。
+    - title: 来源许可与发表边界
+      description: >-
+        固定 commit 没有 LICENSE，报告标注“未经许可不得转载或引用”。本投稿由来源仓库管理员 Sandrasslc 明确要求复制，
+        仅构成本次提交授权；官方成绩为来源转录，不是 EvalHub 复跑，也不代表来源方对 EvalHub 的认证或背书。
+  overview_tables:
+    - id: capability-framework
+      label: 四项能力
+      title: 主成绩与三个过程解释维度
+      note: 逐项转录固定 commit 报告的能力定义；不同量表不换算、不合并。
+      caption: 真人首章分是唯一主成绩，三个 5 分制维度只用于理解工作流表现。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/page.template.html
+      columns:
+        - { id: capability, label: 能力 }
+        - { id: scale, label: 量表 }
+        - { id: meaning, label: 观察内容 }
+      rows:
+        - id: guide
+          cells:
+            - { column_id: capability, value: 引导互动 }
+            - { column_id: scale, value: 5 分制机器证据评分 }
+            - { column_id: meaning, value: Plan 阶段是否把模糊想法问清并形成可执行决定 }
+        - id: structure
+          cells:
+            - { column_id: capability, value: 结构设计 }
+            - { column_id: scale, value: 5 分制机器证据评分 }
+            - { column_id: meaning, value: 策划文件是否齐全、连贯并在三次运行中保持细致 }
+        - id: compliance
+          cells:
+            - { column_id: capability, value: 执行遵从 }
+            - { column_id: scale, value: 5 分制机器证据评分 }
+            - { column_id: meaning, value: 正文是否按模型自己先前建立的章纲推进 }
+        - id: prose
+          cells:
+            - { column_id: capability, value: 正文创作 }
+            - { column_id: scale, value: 百分制真人编辑盲评 }
+            - { column_id: meaning, value: 第一章的实际阅读质量，也是榜单主成绩 }
+  resources_note: 下面仅列 SoloEnt 与来源仓库的一手材料；没有论文、DOI 或独立数据集主页。
+  resources:
+    - title: novel_benchmark 来源仓库
+      summary: 两期 SoloEnt 模型写作评测的索引、静态报告与完整运行材料所在仓库，本评测钉死到 commit 46c55732。
+      url: https://github.com/SoloEnt-AI/novel_benchmark
+    - title: 18 模型写作全流程完整报告
+      summary: 统一协议、四项能力、18 模型榜单、三轮分数、稳定性、成本、方法和局限的权威来源。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/page.template.html
+    - title: 评测元数据与材料映射
+      summary: 报告日期、规模、说明，以及来源材料目录前缀到 18 个模型名称的结构化映射。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/meta.json
+    - title: 原始方法与四模型批次报告
+      summary: 逐字记录统一初始提示词、固定补充条件、独立空项目、Plan→Act 停止条件、盲评与成本证据口径。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/materials/compare-qwenmax-03/091-%E5%9B%BD%E4%BA%A7%E5%A4%A9%E8%8A%B1%E6%9D%BF%E5%9B%9B%E5%85%84%E5%BC%9F%20Plan%20%E6%A8%A1%E5%BC%8F%E7%9B%B4%E5%87%BA%E6%B5%8B%E8%AF%84.md
+    - title: SoloEnt 官方方法文章
+      summary: 来源方发布的四模型 Plan 模式首轮测评文章，公开同一初始提示词和 Plan→Act 实验流程。
+      url: https://soloent.ai/zh/articles/guo-chan-mo-xing-xing-jia-bi-si-xiong-di-plan-mo-shi-zhi-chu-ce-ping
+    - title: 54 次运行落盘材料
+      summary: 策划、设定、大纲、章纲与有效首章按模型原目录结构保存；本目录不复制这些正文和过程文件。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/tree/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/writingflow_18models/materials
+tasks:
+  - id: runtus-kungfu-writing-workflow
+    label: 穿越闰土的清末国术网文写作全流程
+    prompt: 我想写一本网文，主角穿越闰土，开始修炼国术，打击洋人。你帮我规划一下小说写作流程
+    run_spec: |-
+      在一个全新的 SoloEnt 空项目中进入 Plan，逐字提交 prompt。需要补充条件时逐字回复：“100 万字，传统国术，主角魂穿，热血爽文，清末民初”。
+      其余问题采用模型推荐的默认值，不人工改写模型产出的策划、设定、大纲、章纲或正文。Plan 完成后切换 Act；完整第一章落盘即停止，停止条件后的章节不计入有效样本。
+      同一模型重复上述流程三次，每次使用独立空项目且不共享上下文。保存每次首章正文与完整材料证据；未生成完整首章的运行记录为 failed 并保存失败说明。
+      按 tasks/README.md 创建清单并运行转换器。评测作者匿名化有效首章，由真人编辑按百分制打分，取有效首章分数算术平均作为最终 score。
