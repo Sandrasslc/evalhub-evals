@@ -1,0 +1,29 @@
+{
+  "manifest_version": 1,
+  "eval_id": "soloent-prosewriting-xianxia",
+  "protocol_revision": 1,
+  "upstream_commit": "46c5573259dd1802c808a4063899e99bd8e1f54c",
+  "participant": {
+    "model": "example/model-under-evaluation",
+    "harness": "example-writing-harness",
+    "harness_version": "0.0.0-structural-example"
+  },
+  "run_date": "2026-08-12",
+  "runs": [
+    {
+      "run_id": "run-1",
+      "artifact_path": "chapter-1.txt",
+      "artifact_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "run_id": "run-2",
+      "artifact_path": "chapter-2.txt",
+      "artifact_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "run_id": "run-3",
+      "artifact_path": "chapter-3.txt",
+      "artifact_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+    }
+  ]
+}
