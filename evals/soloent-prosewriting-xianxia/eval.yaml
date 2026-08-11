@@ -1,0 +1,194 @@
+id: soloent-prosewriting-xianxia
+protocol_revision: 1
+name: SoloEnt 仙侠首章正文盲评
+category: useful
+description: >-
+  这套评测把同一份暗黑西游仙侠项目设定与第一章章纲交给参评模型，各自独立写 3 篇约 3000 字的开篇正文，
+  再由真人评审在看不到模型身份的情况下给出总评分、网文感、人物、细节、逻辑问题与 AI 感。主成绩是评审独立填写的
+  0–10 分总评分，不由五个分项加权计算；来源报告收录 10 个模型、30 篇匿名作品与 117 份有效评分。
+hook_title: 同一份仙侠章纲写三遍，真人盲评谁更像成熟网文
+upstream:
+  repo: SoloEnt-AI/novel_benchmark
+  commit: 46c5573259dd1802c808a4063899e99bd8e1f54c
+  contributors: [Sandrasslc]
+references:
+  repository: https://github.com/SoloEnt-AI/novel_benchmark
+dimensions: [语言]
+interface: agent
+runner: custom
+custom_mode: external_workflow
+scoring: custom
+scored_by: author
+score_policy: author_fill
+baseline_policy: required
+score_unit: 分（满分 10）
+scoring_note: >-
+  参评方必须用同一参评模型独立生成 3 篇正文；每次只提供 tasks 中逐字收录的上游题面，不共享前一次输出或评语，
+  不允许人工改写正文。三篇作品去除模型身份后进入来源方的真人盲评流程。评审分别填写总评分、网文感、人物、细节、
+  逻辑问题与 AI 感；主成绩只取“总评分”这一独立字段的模型均值，范围 0–10、越高越好，不由五个分项推算。
+  每一评分列独立进行异常值处理：同时满足偏离该篇中位数超过 2.5×MAD 且绝对偏离超过 2 分才剔除；
+  判别力不足的评审样本整批排除。仓库内转换器只核验三份 UTF-8 正文与证据指纹并输出空分结果，最终数值必须由
+  评测作者按同一匿名评审流程补入；材料不足、身份泄露或协议不符时不补分。
+command_template:
+  argv: [node, evals/soloent-prosewriting-xianxia/pack-to-result.mjs, "{input}", --out, "{output}"]
+  output: soloent-prosewriting-xianxia-result.json
+trials: 3
+detail_profile:
+  source_kind: upstream_publication
+  overview_note: >-
+    协议、题面、方法和官方成绩均取自 SoloEnt-AI/novel_benchmark commit 46c55732 中 2026-08-10 发布的
+    prosewriting_xianxia 报告；HTML 报告快照 sha256 为 ec1b71cc762533a4365d941a55b8e240431c016ea222bf359a97d437998497d9。
+  summary:
+    plain_language: >-
+      十个模型拿到完全相同的仙侠项目定位和第一章章纲：主角穿越成龟丞相庶子归元，在阴冷死牢醒来，受上司刁难，
+      被迫处理剧毒海蛇尸体，并在触碰鳞片时触发金手指。每个模型独立写三遍，作品只以四位编号展示给评审。
+      评审既给一个独立总评分，也分别评价网文感、人物、细节、逻辑问题和 AI 感；总评分的模型均值决定榜单。
+    why_it_matters: >-
+      长篇网文的开篇要同时建立环境、人物处境、冲突、节奏和追读钩子。只看通顺度很难判断模型能不能按章纲落实这些要求，
+      而同题三次生成可以同时观察质量与稳定性。匿名真人评审还减少了模型品牌先验对判断的影响，让结果更接近读者实际看到正文时的感受。
+  method_steps:
+    - title: 固定同一份项目设定与章纲
+      description: >-
+        所有模型都收到 tasks 中逐字收录的同一题面：项目定位、核心一句话、第一章标题、三个场景的氛围与行为约束、
+        结尾触发金手指的位置，以及约 3000 字篇幅要求。
+    - title: 每个模型独立生成三篇
+      description: >-
+        每篇从相同题面重新开始，不向模型展示其他模型或自己前一次的正文、评分和评语。来源报告共得到 30 篇匿名作品。
+    - title: 四位编号匿名评审
+      description: >-
+        作品以四位编号呈现，评审看不到模型名称、其他人的评分或评审进度；编号与模型的映射只存在于管理端。
+        每篇有 3–5 份真人测评员评分，另加 1 份内部专家评分。
+    - title: 分列清洗异常评分
+      description: >-
+        六个评分字段逐列独立处理；单个分数只有在偏离该篇中位数超过 2.5×MAD 且绝对偏离超过 2 分时才剔除。
+        对评审做内部一致性筛查，判别力不足的样本整批排除；本期排除 8 份。
+    - title: 汇总总评分与解释维度
+      description: >-
+        每篇先汇总清洗后的评分，再按模型汇总三篇。主成绩是评审独立填写的总评分均值；网文感、人物、细节、
+        逻辑质量（10−逻辑问题）和低 AI 感质量（10−AI 感）只用于解释，不参与主成绩计算。
+  score_interpretation: >-
+    主成绩范围 0–10，越高越好，代表三篇开篇正文经匿名真人评审后“总评分”字段的模型均值。
+    它不是五维平均，也不能从五个解释维度反推。来源报告最高 6.78、最低 4.82，跨度 1.96；每个模型只有三篇，
+    第一档三个模型差异不具统计显著性，因此更适合按档位而非细小名次解读。比较必须保持题面、三次独立生成、匿名方式和清洗规则一致。
+  key_facts:
+    - value: 10 个模型 / 30 篇正文
+      label: 来源报告的参评规模
+      description: 每个模型独立生成三篇同题仙侠第一章。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/meta.json
+    - value: 117 份
+      label: 清洗后有效评分
+      description: 每篇 3–5 份测评员评分，另加 1 份内部专家评分。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/page.template.html
+    - value: 6.78 / 10
+      label: 来源榜单最高总评分
+      description: Gemini 3.1 Pro 的三篇汇总总评分；来源方明确提示第一档差异不显著。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/page.template.html
+    - value: 2.5×MAD 且偏离超过 2 分
+      label: 单列异常值剔除门槛
+      description: 两个条件必须同时满足，不是任一满足即剔除。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/page.template.html
+    - value: 约 3000 字
+      label: 单篇目标篇幅
+      description: 来源报告说明有模型写到约 5500 字，篇幅偏离本身不自动换算成扣分。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/page.template.html
+  caveats:
+    - title: 每个模型只有三篇，细小名次不稳
+      description: >-
+        来源报告明确指出第一档三个模型之间的差异不具统计显著性，并采用分档而非精确排名；三篇样本无法可靠估计更广泛题材或长周期写作的稳定表现。
+    - title: 只覆盖仙侠开篇，不覆盖长篇兑现
+      description: >-
+        所有判断都基于约 3000 字的第一章，不能说明模型能否在几十万字中维持节奏、回收伏笔、完成角色弧光或保持设定一致。
+    - title: AI 感主观性最强
+      description: >-
+        来源报告指出 AI 感评分普遍偏高且离散度大，不同评审对 AI 痕迹的理解可能不同；它是唯一会改变模型排序的解释维度，不能脱离总评分单独下结论。
+    - title: 官方成绩是来源转录，不是 EvalHub 复跑
+      description: >-
+        published-results 转录来源报告中的总分与分项，并保留全部十行官方榜单；EvalHub 没有独立复跑或重新裁判，也不代表来源方对 EvalHub 的认证或背书。
+    - title: 上游仓库没有独立许可证文件
+      description: >-
+        固定 commit 未包含 LICENSE，报告页还写有“未经许可不得转载或引用”。本投稿由该来源仓库的管理员 Sandrasslc 明确要求复制投稿，
+        这构成本次提交授权，但不应解读为对任何第三方授予一般性再利用许可。
+  overview_tables:
+    - id: scoring-fields
+      label: 评分字段
+      title: 主成绩与五个解释维度
+      note: 字段口径逐项来自固定 commit 的报告说明；两个负向原始字段在展示时转换为质量分。
+      caption: 只有总评分决定榜单，五个维度不加权、不参与主成绩计算。
+      source_url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/page.template.html
+      columns:
+        - { id: field, label: 字段 }
+        - { id: role, label: 用途 }
+        - { id: direction, label: 展示口径 }
+      rows:
+        - id: total
+          cells:
+            - { column_id: field, value: 总评分 }
+            - { column_id: role, value: 主成绩，独立填写 }
+            - { column_id: direction, value: 0–10，越高越好 }
+        - id: web-fiction
+          cells:
+            - { column_id: field, value: 网文感 }
+            - { column_id: role, value: 解释维度 }
+            - { column_id: direction, value: 越高越好 }
+        - id: character
+          cells:
+            - { column_id: field, value: 人物 }
+            - { column_id: role, value: 解释维度 }
+            - { column_id: direction, value: 越高越好 }
+        - id: detail
+          cells:
+            - { column_id: field, value: 细节 }
+            - { column_id: role, value: 解释维度 }
+            - { column_id: direction, value: 越高越好 }
+        - id: logic
+          cells:
+            - { column_id: field, value: 逻辑问题 }
+            - { column_id: role, value: 解释维度 }
+            - { column_id: direction, value: 展示为 10−逻辑问题 }
+        - id: ai-feel
+          cells:
+            - { column_id: field, value: AI 感 }
+            - { column_id: role, value: 解释维度 }
+            - { column_id: direction, value: 展示为 10−AI 感 }
+  resources_note: 下面仅列来源方仓库中可逐字核验的一手材料；没有论文、DOI 或独立数据集主页。
+  resources:
+    - title: novel_benchmark 来源仓库
+      summary: 两期 SoloEnt 模型写作评测的索引、静态报告、原始作品与评语所在仓库；本评测钉死到 commit 46c55732。
+      url: https://github.com/SoloEnt-AI/novel_benchmark
+    - title: 仙侠正文评测完整报告
+      summary: 题面、方法、局限、十模型榜单、五维分项、三次生成分、成本与 30 篇正文入口的权威来源。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/page.template.html
+    - title: 仙侠正文评测元数据
+      summary: 报告日期、标题、标签以及 10 模型、30 作品、117 有效评分三项总量的结构化来源。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/meta.json
+    - title: 30 篇来源正文
+      summary: 四位匿名作品编号、模型内部代号与完整生成正文；本目录不复制正文，仅通过固定 commit 引用。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/data/works.json
+    - title: 评审简评数据
+      summary: 作品编号、评审组别、总评分与原始简评；本目录不复制评语，仅通过固定 commit 引用。
+      url: https://github.com/SoloEnt-AI/novel_benchmark/blob/46c5573259dd1802c808a4063899e99bd8e1f54c/reports/prosewriting_xianxia/data/comments.json
+tasks:
+  - id: dragon-palace-death-prison-chapter-one
+    label: 第一章：龙宫死牢，第 9527 号狱卒
+    prompt: |-
+      项目定位
+
+      《西游：龙宫葬地，苟道长生》——暗黑西游 / 稳健苟道 / 权谋算计 / 凡人流升级。
+
+      核心一句话：「在这吃人的西游世界，我归元不求成佛作祖，只求熬死在座的各位，把你们的骨灰扬了，顺便接收你们的遗产。」
+
+      第一章：龙宫死牢，第 9527 号狱卒
+
+      穿越成龟丞相庶子的归元，在阴冷潮湿的死牢中醒来，面对上司蟹老三的刁难，被迫去处理一具剧毒的海蛇尸体。三个场景：
+
+      - 死牢苏醒（压抑 / 冰冷）：墙壁渗出的不是水，是黑色的死气。要求强调「冷」「湿」「黑」，不要大段独白，通过观察环境侧面反映内心。
+      - 上司刁难（冲突 / 反差）：原身自卑又自傲，穿越后却跪地求饶自称「小的」。示敌以弱，是为了更好地一击毙命。
+      - 走向深渊（氛围 / 铺垫）：穿过关押疯狂犯人的走廊，抵达丁字区那具散发幽绿毒气的海蛇尸体。
+
+      结尾钩子：指尖触碰鳞片的瞬间，一股冰冷的寒流钻入体内，脑海中响起一声如磨盘转动的轰鸣——这就是章纲要求触发金手指的位置，也是多个模型没接住的地方。
+
+      篇幅要求 3000 字左右。有模型写到了 5,500 字。
+    run_spec: |-
+      同一参评模型执行三次相互独立的生成。每次只提供 prompt 全文，不提供其他运行的正文、评分、评语或模型身份提示；不进行人工续写、删改或润色。
+      保存每次模型返回的完整 UTF-8 正文为单独文本文件，并计算 sha256。三次完成后按 tasks/README.md 创建提交清单，运行仓库内转换器生成空分结果。
+      作品进入评审前必须替换为不泄露模型身份的随机四位编号。评测作者按 scoring_note 中相同的匿名真人评审、异常值处理和样本筛查规则补入最终总评分。
